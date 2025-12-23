@@ -1,22 +1,28 @@
-const log = require('../util/log');
+// @ts-check
+/**
+ * @typedef {import("../types.js").Callback} Callback
+ * @typedef {import("../types.js").Node} Node
+ */
 
-const status = {};
-
-global.moreStatus = {
-  sid: global.distribution.util.id.getSID(global.nodeConfig),
-  nid: global.distribution.util.id.getNID(global.nodeConfig),
-  counts: 0,
+/**
+ * @param {string} configuration
+ * @param {Callback} callback
+ */
+function get(configuration, callback) {
 };
 
-status.get = function(configuration, callback) {
-  callback = callback || function() { };
-};
 
+/**
+ * @param {Node} configuration
+ * @param {Callback} callback
+ */
+function spawn(configuration, callback) {
+}
 
-status.spawn = function(configuration, callback) {
-};
+/**
+ * @param {Callback} callback
+ */
+function stop(callback) {
+}
 
-status.stop = function(callback) {
-};
-
-module.exports = status;
+module.exports = {get, spawn, stop};
