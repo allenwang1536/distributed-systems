@@ -3,7 +3,7 @@ set -e
 
 cd "$(dirname "$0")" || exit 1
 
-SANDBOX_URL="https://cs.brown.edu/courses/csci1380/sandbox/2"
+SANDBOX_URL="https://cs.brown.edu/courses/csci1380/sandbox/1"
 NUM_QUERIES=500
 QUERY_TERM="the"
 

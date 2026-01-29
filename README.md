@@ -125,4 +125,34 @@ distribution.node.start(() => {
 
 # Results and Reflections
 
-> ...
+# M0: Setup & Centralized Computing
+
+* name: `Allen Wang`
+
+* email: `allen_wang1@brown.edu`
+
+* cslogin: `awang299`
+
+
+## Summary
+
+My implementation consists of 8 components addressing T1–8. The most challenging aspect was merging the local and global inverted indices because it required carefully maintaining multiple invariants at once (correct frequency aggregation, per term URL ordering, and consistent output formatting) while handling edge cases like missing or empty global index files.
+
+## Correctness & Performance Characterization
+
+To characterize correctness, I developed 9 tests (in addition to the given tests) that test the following cases:
+- URL extraction and resolution (getURLs.js)
+- HTML to text extraction (getText.js)
+- token normalization and stopword removal (process.sh)
+- stemming (stem.js)
+- n-gram generation (combine.sh)
+- local inverted index formatting (invert.sh)
+- correct merging and frequency aggregation into the global index + missing file behavior (merge.js)
+- query normalization + matching behavior including stopword-only queries (query.js)
+- simple end-to-end test
+
+*Performance*: The throughput of various subsystems is described in the `"throughput"` portion of package.json. The characteristics of my development machines are summarized in the `"dev"` portion of package.json.
+
+## Wild Guess
+
+I think the fully distributed version will take around 5000 lines of code. The centralized version is small, but the distributed system will involve a lot of integrations that will quickly add up. The many different tools and libraries needed will greatly inflate the code count, even if the core logic is the same.

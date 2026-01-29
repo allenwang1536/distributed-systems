@@ -9,11 +9,11 @@ const log = require('./distribution/util/log.js');
  * @param {Node} [config]
  */
 function bootstrap(config) {
-    // This loads the reference implementation in case you want to selectively override parts of your implementation with it (e.g., extra credit ypu are not doing or missing functionality from previous milestones).
-    // This needs to run before the rest of the code so that the globalThis.distribution object is populated correctly.
-    // @ts-ignore Optional dependency for reference implementation.
-    const distributionLib = require('@brown-ds/distribution')(config);
-    distributionLib; // To avoid unused variable warning
+  // This loads the reference implementation in case you want to selectively override parts of your implementation with it (e.g., extra credit ypu are not doing or missing functionality from previous milestones).
+  // This needs to run before the rest of the code so that the globalThis.distribution object is populated correctly.
+  // @ts-ignore Optional dependency for reference implementation.
+  const distributionLib = require('@brown-ds/distribution')(config);
+  distributionLib; // To avoid unused variable warning
   const distribution = {};
 
   // @ts-ignore This is the first time globalThis.distribution is being initialized, so the object does not have all the necessary properties.
