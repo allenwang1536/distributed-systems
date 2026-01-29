@@ -31,6 +31,40 @@ const path = require('path');
 
 
 function query(indexFile, args) {
+  const repoRoot = __dirname;
+  const processPath = path.join(repoRoot, 'c', 'process.sh');
+  const stemPath = path.join(repoRoot, 'c', 'stem.js');
+
+  const raw = args.join(' ');
+
+  // normalize
+  let processed;
+  try {
+    const cmd = `printf "%s" ${JSON.stringify(raw)} ` +
+                `| ${JSON.stringify(processPath)} ` +
+                `| ${JSON.stringify(stemPath)} ` +
+                `| tr "\\r\\n" "  "`;
+    processed = execSync(cmd, {encoding: 'utf-8', shell: '/bin/bash'}).trim();
+  } catch (e) {
+    return;
+  }
+
+  if (processed.length === 0) return;
+
+  // search through contents line by line
+  let contents;
+  try {
+    contents = fs.readFileSync(indexFile, 'utf8');
+  } catch (e) {
+    return;
+  }
+
+  const lines = contents.split('\n');
+  for (const line of lines) {
+    if (line.includes(processed)) {
+      console.log(line);
+    }
+  }
 }
 
 const args = process.argv.slice(2); // Get command-line arguments

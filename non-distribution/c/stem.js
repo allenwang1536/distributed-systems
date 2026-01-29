@@ -16,4 +16,12 @@ const rl = readline.createInterface({
 
 rl.on('line', function(line) {
   // Print the Porter stem from `natural` for each element of the stream.
+
+  const term = line.trim();
+  if (term.length == 0) return;
+
+  const stemmed = natural.PorterStemmer.stem(term);
+  if (stemmed.length == 0) return;
+
+  console.log(stemmed);
 });
