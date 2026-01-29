@@ -2,9 +2,9 @@
   "name": "cs1380:m0",
   "version": "1.0.0",
   "author": {
-    "name": "<first last?>",
-    "email": "<email@brown.edu?>",
-    "cslogin": "<cslogin?>"
+    "name": "Allen Wang",
+    "email": "allen_wang1@brown.edu",
+    "cslogin": "awang299"
   },
   "description": "A set of components for cs1380's search engine.",
   "dependencies": {
@@ -29,19 +29,21 @@
   "report": [
     {
       "milestone": "M0",
-      "hours": 999,
-      "loc": 999,
+      "hours": 10,
+      "loc": 900,
+      "jsloc": 600,
+      "sloc": 300,
       "dev": {
         "cpu-no": 999,
         "mem-gb": 999,
         "ssd-gb": 999
       },
       "throughput": {
-        "dev": [],
+        "dev": [1.349,1.349,5.179],
         "aws": [],
         "gs": []
       },
-      "dloc": -99
+      "dloc": 5000
     }
   ]
 }

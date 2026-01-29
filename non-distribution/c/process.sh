@@ -14,8 +14,7 @@
 
 # for each word, remove non letter characters, make lowercase, convert to ASCII, then put on separate line; remove if inside stopwords
 
-iconv -f UTF-8 -t ASCII//TRANSLIT \
-| tr '[:upper:]' '[:lower:]' \
-| tr -cs '[:alpha:]' '\n' \
-| grep -v '^$' \
-| grep -Fvx -f d/stopwords.txt || true
+iconv -c -f UTF-8 -t ASCII//TRANSLIT \
+  | tr '[:upper:]' '[:lower:]' \
+  | tr -cs '[:alpha:]' '\n' \
+  | grep -vxf d/stopwords.txt || true
