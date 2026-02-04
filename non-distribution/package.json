@@ -34,9 +34,9 @@
       "jsloc": 600,
       "sloc": 300,
       "dev": {
-        "cpu-no": 999,
-        "mem-gb": 999,
-        "ssd-gb": 999
+        "cpu-no": 11,
+        "mem-gb": 18,
+        "ssd-gb": 460
       },
       "throughput": {
         "dev": [1.349,1.349,5.179],

@@ -9,29 +9,82 @@
 const distribution = require('../../distribution.js')();
 require('../helpers/sync-guard');
 
+const util = distribution.util;
+
+// base values round trip
 test('(1 pts) student test', () => {
-  // Fill out this test case...
-    throw new Error('Not implemented');
+  const values = [3, -1.5, 'hello', '', true, false, null, undefined];
+
+  for (const v of values) {
+    const s = util.serialize(v);
+    const out = util.deserialize(s);
+    expect(out).toEqual(v);
+  }
+});
+
+// function round trip
+test('(1 pts) student test', () => {
+  const f = (a, b) => a * 10 + b;
+
+  let s = util.serialize(f);
+  let out = util.deserialize(s);
+  expect(typeof out).toBe('function');
+  expect(out(2, 3)).toBe(23);
+  expect(out(1, 7)).toBe(17);
+
+  function add(x, y) {
+    return x + y;
+  }
+  s = util.serialize(add);
+  out = util.deserialize(s);
+  expect(typeof out).toBe('function');
+  expect(out(2, 3)).toBe(5);
+  expect(out(1, 7)).toBe(8);
 });
 
 
+// nested object / array
 test('(1 pts) student test', () => {
-  // Fill out this test case...
-    throw new Error('Not implemented');
+  const obj = {
+    title: 'NBA',
+    teams: [
+      {name: 'OKC', players: ['SGA', 'Chet']},
+      {name: 'Lakers', players: ['Luka', 'LBJ']},
+    ],
+    meta: {active: true, missing: undefined},
+  };
+
+  const s = util.serialize(obj);
+  const out = util.deserialize(s);
+
+  expect(out).toEqual(obj);
+  expect(Array.isArray(out.teams)).toBe(true);
+  expect(out.teams[0].players[1]).toBe('Chet');
 });
 
-
+// date + error round trip
 test('(1 pts) student test', () => {
-  // Fill out this test case...
-    throw new Error('Not implemented');
+  const d = new Date(1700000000);
+  const e = new Error('error');
+  e.name = 'RangeError';
+
+  const obj = {when: d, err: e};
+
+  const s = util.serialize(obj);
+  const out = util.deserialize(s);
+
+  expect(out.when instanceof Date).toBe(true);
+  expect(out.when.getTime()).toBe(d.getTime());
+
+  expect(out.err instanceof Error).toBe(true);
+  expect(out.err.name).toBe('RangeError');
+  expect(out.err.message).toBe('error');
 });
 
+// valid JSON but not serialized object
 test('(1 pts) student test', () => {
-  // Fill out this test case...
-    throw new Error('Not implemented');
-});
-
-test('(1 pts) student test', () => {
-  // Fill out this test case...
-    throw new Error('Not implemented');
+  const notWireFormat = '{"a":1,"b":2}';
+  expect(() => {
+    util.deserialize(notWireFormat);
+  }).toThrow(SyntaxError);
 });
