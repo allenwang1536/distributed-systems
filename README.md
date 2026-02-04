@@ -156,3 +156,20 @@ To characterize correctness, I developed 9 tests (in addition to the given tests
 ## Wild Guess
 
 I think the fully distributed version will take around 5000 lines of code. The centralized version is small, but the distributed system will involve a lot of integrations that will quickly add up. The many different tools and libraries needed will greatly inflate the code count, even if the core logic is the same.
+
+
+# M1: Serialization / Deserialization
+
+## Summary
+
+My implementation consists of 1 core component (`serialization.js`) integrated into the existing distribution utility library, totaling around 200 lines of code. The biggest challenges were handling JS's dynamically typed values in a uniform way, supporting functions and special objects (Date, Error), and ensuring that objects were parsed correctly. To address these challenges, I introduced explicit type tags during serialization so that it could be reconstructed during deserialization. For objects in particular, I had to change up my code to define 'encode'/'decode' functions so that I could recursively send nested objects without losing type info.
+
+## Correctness & Performance Characterization
+
+*Correctness*: I wrote 10 tests (including both unit tests and required scenario tests); these tests take around 1s to execute. These tests cover base types, functions, nested and recursive objects, arrays, dates, errors, malformed inputs, and round-trip serialization–deserialization correctness. I also tested on the full given test suite that is much more comprehensive testing the edge cases.
+
+*Performance*: The latency of various subsystems is described in the `"latency"` portion of package.json. The characteristics of my development machines are summarized in the `"dev"` portion of package.json. You can find the code in test/student/m1.latency.test.js.
+
+Latency: Three workloads (base values, functions, complex objects) were evaluated. I measured average serialization + deserialization times for each (measured in us).
+
+Throughput: Throughput values were derived from latency measurements. The values listed in dev are measured in operations / second.
