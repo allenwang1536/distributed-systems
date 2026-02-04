@@ -24,12 +24,14 @@ test('M1 latency characterization (T5)', () => {
 
   // workload 1: base types (T2)
   workloads.push(bench('T2 serialize number', () => util.serialize(123.456)));
-  workloads.push(bench('T2 deserialize number', () => util.deserialize(util.serialize(123.456))));
+  let out = util.serialize(123.456);
+  workloads.push(bench('T2 deserialize number', () => util.deserialize(out)));
 
   // workload 2: function (T3)
   const fn = (a, b) => a + b;
   workloads.push(bench('T3 serialize function', () => util.serialize(fn)));
-  workloads.push(bench('T3 deserialize function', () => util.deserialize(util.serialize(fn))));
+  out = util.serialize(fn);
+  workloads.push(bench('T3 deserialize function', () => util.deserialize(out)));
 
   // workload 3: complex recursive (T4)
   const complex = {
@@ -40,9 +42,9 @@ test('M1 latency characterization (T5)', () => {
     e: null,
     f: undefined,
   };
-  const complexS = util.serialize(complex);
   workloads.push(bench('T4 serialize complex', () => util.serialize(complex), 5000, 500));
-  workloads.push(bench('T4 deserialize complex', () => util.deserialize(complexS), 5000, 500));
+  out = util.serialize(complex);
+  workloads.push(bench('T4 deserialize complex', () => util.deserialize(out), 5000, 500));
 
   console.log('\nLatency (microseconds):');
   for (const w of workloads) {
