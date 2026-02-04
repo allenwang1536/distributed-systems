@@ -16,11 +16,7 @@ function bench(name, fn, iters = 10000, warmup = 2000) {
   const sum = times.reduce((a, b) => a + b, 0);
   const avgUs = (sum / iters) / 1000;
 
-  times.sort((a, b) => a - b);
-  const p50Us = times[Math.floor(iters * 0.50)] / 1000;
-  const p95Us = times[Math.floor(iters * 0.95)] / 1000;
-
-  return {name, avgUs, p50Us, p95Us};
+  return {name, avgUs};
 }
 
 test('M1 latency characterization (T5)', () => {
@@ -51,7 +47,7 @@ test('M1 latency characterization (T5)', () => {
   console.log('\nLatency (microseconds):');
   for (const w of workloads) {
     console.log(
-        `${w.name}: avg=${w.avgUs.toFixed(2)}us p50=${w.p50Us.toFixed(2)}us p95=${w.p95Us.toFixed(2)}us`,
+        `${w.name}: avg=${w.avgUs.toFixed(2)}us`,
     );
   }
 
