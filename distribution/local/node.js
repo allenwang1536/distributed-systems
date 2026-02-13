@@ -83,16 +83,39 @@ function start(callback) {
   const server = http.createServer((req, res) => {
     /* Your server will be listening for PUT requests. */
 
-    // Write some code...
+    if (globalThis.distribution?.node?.counts === undefined) {
+      globalThis.distribution.node.counts = 0;
+    }
 
+    globalThis.distribution.node.counts += 1;
+
+    if (req.method !== 'PUT') {
+      res.statusCode = 405;
+      res.setHeader('Content-Type', 'application/json');
+      const err = new Error('node: only PUT requests are supported');
+      res.end(globalThis.distribution.util.serialize(err));
+      return;
+    }
 
     /*
       The path of the http request will determine the service to be used.
       The url will have the form: http://node_ip:node_port/service/method
     */
 
-    // Write some code...
+    const pathname = req.url || '';
+    const parts = pathname.split('/').filter(Boolean);
 
+    const gid = parts[0];
+    const serviceName = parts[1];
+    const methodName = parts[2];
+
+    if (!gid || !serviceName || !methodName) {
+      res.statusCode = 400;
+      res.setHeader('Content-Type', 'application/json');
+      const err = new Error('node: invalid path, expected /<gid>/<service>/<method>');
+      res.end(globalThis.distribution.util.serialize([err, null]));
+      return;
+    }
 
     /*
       A common pattern in handling HTTP requests in Node.js is to have a
@@ -114,10 +137,10 @@ function start(callback) {
     const body = [];
 
     req.on('data', (chunk) => {
+      body.push(chunk);
     });
 
     req.on('end', () => {
-
       /*
         Here, you can handle the service requests.
         Use the local routes service to get the service you need to call.
@@ -127,6 +150,55 @@ function start(callback) {
 
       // Write some code...
 
+
+      let args;
+      try {
+        const raw = Buffer.concat(body).toString('utf8');
+        args = globalThis.distribution.util.deserialize(raw);
+      } catch (e) {
+        res.statusCode = 400;
+        res.setHeader('Content-Type', 'application/json');
+        const err = e instanceof Error ? e : new Error(String(e));
+        res.end(globalThis.distribution.util.serialize([err, null]));
+        return;
+      }
+
+      if (!Array.isArray(args)) {
+        res.statusCode = 400;
+        res.setHeader('Content-Type', 'application/json');
+        res.end(globalThis.distribution.util.serialize([new Error('node: request body must be a serialized array'), null]));
+        return;
+      }
+
+      globalThis.distribution.local.routes.get({service: serviceName, gid: gid}, (e, service) => {
+        if (e || !service) {
+          res.statusCode = 404;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(globalThis.distribution.util.serialize([e || new Error(`node: service not found: ${serviceName}`), null]));
+          return;
+        }
+
+        const method = service[methodName];
+
+        if (typeof method !== 'function') {
+          res.statusCode = 404;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(globalThis.distribution.util.serialize([new Error(`node: method not found: ${serviceName}.${methodName}`), null]));
+          return;
+        }
+
+        const done = (err, value) => {
+          res.statusCode = 200;
+          res.setHeader('Content-Type', 'application/json');
+          res.end(globalThis.distribution.util.serialize([err || null, value === undefined ? null : value]));
+        };
+
+        try {
+          method(...args, done);
+        } catch (err) {
+          done(err instanceof Error ? err : new Error(String(err)), null);
+        }
+      });
     });
   });
 
