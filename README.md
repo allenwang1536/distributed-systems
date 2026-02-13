@@ -173,3 +173,17 @@ My implementation consists of 1 core component (`serialization.js`) integrated i
 Latency: Three workloads (base values, functions, complex objects) were evaluated. I measured average serialization + deserialization times for each (measured in us).
 
 Throughput: Throughput values were derived from latency measurements. The values listed in dev are measured in operations / second.
+
+
+# M2: Actors and Remote Procedure Calls (RPC)
+
+## Summary
+My implementation comprises 4 software components, totaling 200 lines of code. Key challenges included: 1. getting error handling right without crashing the runtime 2. making routing work consistently across both direct calls and HTTP 3. ensuring function messages remain executable
+
+## Correctness & Performance Characterization
+Correctness: I wrote 5 student tests plus 3 scenario tests. The tests took around a second to execute.
+
+Performance: I characterized the performance of comm and RPC by sending 1000 service requests in a tight loop. Average throughput and latency is recorded in `package.json`. Average latency is measured in ms, throughput is measured in requests per second.
+
+## Key Feature
+createRPC lets another computer ask your computer to run a piece of logic and send back its result. For instance, let's say computer A has a function that addsFive to a running value. It can wrap this up into a function called addsFiveRPC. When computer B calls addsFiveRPC, under the hood it's simply sending a request over to A to addFive and waiting on a result back.
