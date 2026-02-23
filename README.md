@@ -187,3 +187,20 @@ Performance: I characterized the performance of comm and RPC by sending 1000 ser
 
 ## Key Feature
 createRPC lets another computer ask your computer to run a piece of logic and send back its result. For instance, let's say computer A has a function that addsFive to a running value. It can wrap this up into a function called addsFiveRPC. When computer B calls addsFiveRPC, under the hood it's simply sending a request over to A to addFive and waiting on a result back.
+
+# M3: Node Groups & Gossip Protocols
+
+## Summary
+My implementation comprises 6 new software components, totaling ~250 lines of codes over the previous implementation. Key challenges included 1. getting group instantiation right without breaking existing local and all behavior 2. making request routing consistent across local vs distributed execution by correctly interpreting /<gid>/<service>/<method> paths 3. matching the test suite's expected error semantics (per node error maps, empty value maps on partial failure, etc). 
+
+## Correctness & Performance Characterization
+Correctness: I validated correctness by running the full provided test suite (regular + scenario) + 5 student tests that I created. These tests centered around group creation / deletion edge cases, dynamic membership updates, and distributed fanout error handling. The total test suite ran in around 3s.
+
+Performance: I tested performance using a sequential spawn benchmark with N = 10 nodes. I've recorded the average latency (ms / node) and throughput (nodes / sec) in the package.json file. 
+
+## Key Feature
+The point of gossip is so that we can scale to large group sizes and ensure robustness under partial failures. If a node sent updates to every peer, it would become very expensive very quickly. 
+
+With gossip, each nodes sends to only a small subset and the information spreads gradually. This reduces per node load and makes the system resilient. Even if some nodes are slow / unreachable, the update can still propagate through other paths.
+
+
