@@ -102,14 +102,23 @@ function start(callback) {
       The url will have the form: http://node_ip:node_port/service/method
     */
 
-    const pathname = req.url || '';
-    const parts = pathname.split('/').filter(Boolean);
+    const parsed = url.parse(req.url || '', false);
+    const pathname = parsed.pathname || '';
+    const parts = pathname.split('/').filter(Boolean).map((p) => decodeURIComponent(p));
 
-    const gid = parts[0];
-    const serviceName = parts[1];
-    const methodName = parts[2];
+    let gid;
+    let serviceName;
+    let methodName;
 
-    if (!gid || !serviceName || !methodName) {
+    if (parts.length === 3) {
+      gid = parts[0];
+      serviceName = parts[1];
+      methodName = parts[2];
+    } else if (parts.length === 2) {
+      gid = 'local';
+      serviceName = parts[0];
+      methodName = parts[1];
+    } else {
       res.statusCode = 400;
       res.setHeader('Content-Type', 'application/json');
       const err = new Error('node: invalid path, expected /<gid>/<service>/<method>');

@@ -18,7 +18,9 @@ function get(configuration, callback) {
     serviceName = configuration;
   } else if (configuration && typeof configuration === 'object') {
     serviceName = configuration.service;
-    gid = configuration.gid;
+    if (typeof configuration.gid === 'string' && configuration.gid.length > 0) {
+      gid = configuration.gid;
+    }
   }
 
   if (typeof serviceName !== 'string' || serviceName.length === 0) {
@@ -34,8 +36,17 @@ function get(configuration, callback) {
   }
 
   // TODO: handle gid non-local
+  const groupObj = globalThis.distribution ? globalThis.distribution[gid] : undefined;
+  if (!groupObj || typeof groupObj !== 'object') {
+    return callback(new Error(`routes.get: no such group "${gid}"`));
+  }
 
-  return callback(new Error('routes.get not implemented'));
+  const service = groupObj[serviceName];
+  if (!service) {
+    return callback(new Error(`routes.get: no such service "${serviceName}" in group "${gid}"`));
+  }
+
+  return callback(null, service);
 }
 
 /**

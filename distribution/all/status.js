@@ -23,7 +23,37 @@ function status(config) {
    * @param {Callback} callback
    */
   function get(configuration, callback) {
-    callback(new Error('status.get not implemented'));
+    const key = configuration;
+    const gid = context.gid;
+
+    const remote = {service: 'status', method: 'get', gid: 'local'};
+
+    globalThis.distribution[gid].comm.send([key], remote, (e, v) => {
+      const errMap =
+        (e && typeof e === 'object' && !Array.isArray(e) && Object.keys(e).length > 0) ? e : {};
+
+      if (Object.keys(errMap).length > 0) {
+        return callback(errMap, {});
+      }
+
+      if (!v || typeof v !== 'object' || Array.isArray(v)) {
+        return callback({}, {});
+      }
+
+      if (key === 'nid' || key === 'sid') {
+        return callback({}, Object.values(v));
+      }
+
+      if (key === 'heapTotal') {
+        const total = Object.values(v).reduce((acc, val) => acc + Number(val || 0), 0);
+        return callback({}, total);
+      }
+
+      if (key === 'heapUsed') {
+        return callback({}, v);
+      }
+      return callback({}, v);
+    });
   }
 
   /**

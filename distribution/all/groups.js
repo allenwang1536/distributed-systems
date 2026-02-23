@@ -19,21 +19,65 @@
 function groups(config) {
   const context = {gid: config.gid || 'all'};
 
+  function fanout(method, args, callback) {
+    const gid = context.gid;
+
+    globalThis.distribution.local.groups.get(gid, (ge, group) => {
+      if (ge || !group) {
+        return callback(ge || new Error(`groups.${method}: no such group "${gid}"`), {});
+      }
+
+      const sids = Object.keys(group);
+      if (sids.length === 0) {
+        return callback(new Error(`groups.${method}: group "${gid}" is empty`), {});
+      }
+
+      const values = Object.create(null);
+      const errors = Object.create(null);
+
+      let pending = sids.length;
+      for (const sid of sids) {
+        const node = group[sid];
+
+        globalThis.distribution.local.comm.send(args, {
+          node,
+          gid: 'local',
+          service: 'groups',
+          method,
+        }, (e, v) => {
+          if (e) {
+            errors[sid] = e instanceof Error ? e : new Error(String(e));
+          } else {
+            values[sid] = v;
+          }
+
+          pending -= 1;
+          if (pending === 0) {
+            if (Object.keys(errors).length > 0) {
+              return callback(errors, {});
+            }
+            return callback({}, values);
+          }
+        });
+      }
+    });
+  }
+
   /**
    * @param {Config | string} config
    * @param {Object.<string, Node>} group
    * @param {Callback} callback
    */
   function put(config, group, callback) {
-    return callback(new Error('groups.put not implemented'));
+    return fanout('put', [config, group], callback);
   }
 
   /**
-   * @param {string} name
+   * @param {string} name=
    * @param {Callback} callback
    */
   function del(name, callback) {
-    return callback(new Error('groups.del not implemented'));
+    return fanout('del', [name], callback);
   }
 
   /**
@@ -41,7 +85,7 @@ function groups(config) {
    * @param {Callback} callback
    */
   function get(name, callback) {
-    return callback(new Error('groups.get not implemented'));
+    return fanout('get', [name], callback);
   }
 
   /**
@@ -50,7 +94,7 @@ function groups(config) {
    * @param {Callback} callback
    */
   function add(name, node, callback) {
-    return callback(new Error('groups.add not implemented'));
+    return fanout('add', [name, node], callback);
   }
 
   /**
@@ -59,7 +103,7 @@ function groups(config) {
    * @param {Callback} callback
    */
   function rem(name, node, callback) {
-    return callback(new Error('groups.rem not implemented'));
+    return fanout('rem', [name, node], callback);
   }
 
   return {
