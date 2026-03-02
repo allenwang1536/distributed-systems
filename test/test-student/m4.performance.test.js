@@ -113,9 +113,9 @@ afterAll((done) => {
 
 test('M4 performance characterization', (done) => {
   const nodes = [
-    {ip: 'AWS_IP_1', port: 8000},
-    {ip: 'AWS_IP_2', port: 8000},
-    {ip: 'AWS_IP_3', port: 8000},
+    {ip: '13.58.213.161', port: 8080},
+    {ip: '13.58.213.161', port: 8081},
+    {ip: '13.58.213.161', port: 8082},
   ];
 
   const group = {};
