@@ -80,8 +80,20 @@ function decode(parsed) {
       if (parsed.value === 'NaN') return NaN;
       if (parsed.value === 'Infinity') return Infinity;
       if (parsed.value === '-Infinity') return -Infinity;
-      if (typeof parsed.value !== 'number') throw new SyntaxError('Invalid number payload');
-      return parsed.value;
+
+      if (typeof parsed.value === 'number') {
+        return parsed.value;
+      }
+
+      // fix to match reference implementation
+      if (typeof parsed.value === 'string' && parsed.value.trim() !== '') {
+        const n = Number(parsed.value);
+        if (!Number.isNaN(n)) {
+          return n;
+        }
+      }
+
+      throw new SyntaxError('Invalid number payload');
     case 'string':
       if (typeof parsed.value !== 'string') throw new SyntaxError('Invalid string payload');
       return parsed.value;

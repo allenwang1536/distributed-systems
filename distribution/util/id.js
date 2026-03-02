@@ -72,10 +72,30 @@ const naiveHash = (kid, nids) => {
 
 /** @type { Hasher } */
 const consistentHash = (kid, nids) => {
+  const ring = [
+    {id: kid, value: idToNum(kid), isKid: true},
+    ...nids.map((nid) => ({
+      id: nid,
+      value: idToNum(nid),
+      isKid: false,
+    })),
+  ].sort((a, b) => (a.value < b.value ? -1 : a.value > b.value ? 1 : 0));
+
+  const kidIndex = ring.findIndex((entry) => entry.isKid);
+  const nextIndex = (kidIndex + 1) % ring.length;
+
+  return ring[nextIndex].id;
 };
 
 /** @type { Hasher } */
 const rendezvousHash = (kid, nids) => {
+  return [...nids]
+      .map((nid) => ({
+        nid,
+        score: idToNum(getID(kid + nid)),
+      }))
+      .sort((a, b) => (a.score < b.score ? 1 : a.score > b.score ? -1 : 0))[0]
+      .nid;
 };
 
 module.exports = {
