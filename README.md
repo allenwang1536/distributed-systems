@@ -203,4 +203,20 @@ The point of gossip is so that we can scale to large group sizes and ensure robu
 
 With gossip, each nodes sends to only a small subset and the information spreads gradually. This reduces per node load and makes the system resilient. Even if some nodes are slow / unreachable, the update can still propagate through other paths.
 
+# M4: Distributed Storage
+
+## Summary 
+
+My implementation for M4 adds both local and dsitributed storage over the existing node group framework. I implemented local mem and store services with put, get, and del, then built distributed mem and store services that route objects to the correct node by hashing the key and forwarding the reques. I also added consistentHash and rendezvousHash to support placement policies beyond naive modulo hashing.
+
+The main challenges were: 1. keeping objects from different distributed service instances isolated by gid even when the same key maps to the same physical node, 2. making the persistent store robust by namespacing data on disk and sanitizing filenames, and 3. making sure hashing and distributed routing agreed exactly with the test suite’s expectations.
+
+## Correctness & Performance Characterization
+
+*Correctness*: I validated correctness by running the provided M4 regular tests, scenario tests, and my student tests. In total, I used 79 M4 tests (including the provided suites and my additional tests), and the test suite completed in around 2s. These tests covered local storage behavior, distributed storage behavior, group-relative key isolation, key hashing, and basic end-to-end placement behavior.
+
+*Performance*: I characterized performance with a client benchmark that first generated 1000 random key-value pairs locally, then measured insertion and retrieval separately against three manually started cloud nodes. The client benchmark was ran locally on my computer. The measured insertion average latency was **32.23 ms** with throughput **30.63 ops/sec**. The measured retrieval average latency was **31.15 ms** with throughput **31.70 ops/sec**. These values are also recorded on the package.json
+
+## Key Feature
+reconf is designed to first identify which keys need to move before relocating objects because this minimizes unnecessary work and avoids touching objects whose placement does not change. By deciding relocation purely from the key under the old and new group configurations, the system only transfers the objects that must move, which reduces bandwidth and avoids redundant operations.
 
