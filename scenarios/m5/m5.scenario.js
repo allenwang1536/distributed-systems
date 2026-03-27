@@ -11,7 +11,6 @@ const strmatchGroup = {};
 const ridxGroup = {};
 const rlgGroup = {};
 
-
 /*
     The local node will be the orchestrator.
 */
@@ -94,9 +93,16 @@ test('(10 pts) (scenario) all.mr:dlib', (done) => {
 */
 
   const mapper = (key, value) => {
+    return value
+        .split(/\s+/)
+        .filter((word) => word.length > 0)
+        .map((word) => ({[word]: 1}));
   };
 
   const reducer = (key, values) => {
+    const out = {};
+    out[key] = values.reduce((sum, count) => sum + count, 0);
+    return out;
   };
 
   const dataset = [
@@ -169,11 +175,26 @@ test('(10 pts) (scenario) all.mr:tfidf', (done) => {
 */
 
   const mapper = (key, value) => {
+    const words = value.split(/\s+/).filter((w) => w.length > 0);
+    const total = words.length;
+    const counts = {};
+    words.forEach((w) => {
+      counts[w] = (counts[w] || 0) + 1;
+    });
+    return Object.keys(counts).map((word) => ({
+      [word]: {doc: key, tf: counts[word] / total},
+    }));
   };
 
-  // Reduce function: calculate TF-IDF for each word
   const reducer = (key, values) => {
     const totalDocs = 3;
+    const numDocsWithTerm = values.length;
+    const idf = Math.log10(totalDocs / numDocsWithTerm);
+    const result = {};
+    values.forEach((v) => {
+      result[v.doc] = Math.round(v.tf * idf * 100) / 100;
+    });
+    return {[key]: result};
   };
 
   const dataset = [
@@ -234,25 +255,83 @@ test('(10 pts) (scenario) all.mr:tfidf', (done) => {
   - Run the map reduce.
 */
 
-test('(10 pts) (scenario) all.mr:crawl', (done) => {
-    done(new Error('Implement this test.'));
-});
+test.skip('(10 pts) (scenario) all.mr:crawl', () => {});
 
-test('(10 pts) (scenario) all.mr:urlxtr', (done) => {
-    done(new Error('Implement the map and reduce functions'));
-});
+test.skip('(10 pts) (scenario) all.mr:urlxtr', () => {});
 
-test('(10 pts) (scenario) all.mr:strmatch', (done) => {
-    done(new Error('Implement the map and reduce functions'));
-});
+test.skip('(10 pts) (scenario) all.mr:strmatch', () => {});
 
 test('(10 pts) (scenario) all.mr:ridx', (done) => {
-    done(new Error('Implement the map and reduce functions'));
+  const mapper = (key, value) => {
+    const words = [...new Set(
+        value
+            .toLowerCase()
+            .split(/\s+/)
+            .map((word) => word.replace(/[^a-z0-9]/g, ''))
+            .filter((word) => word.length > 0),
+    )];
+
+    return words.map((word) => ({[word]: key}));
+  };
+
+  const reducer = (key, values) => {
+    const out = {};
+    out[key] = [...new Set(values)].sort();
+    return out;
+  };
+
+  const dataset = [
+    {'doc1': 'map reduce index'},
+    {'doc2': 'reduce map systems testing'},
+    {'doc3': 'distributed index and design'},
+  ];
+
+  const expected = [
+    {map: ['doc1', 'doc2']},
+    {reduce: ['doc1', 'doc2']},
+    {index: ['doc1', 'doc3']},
+    {systems: ['doc2']},
+    {testing: ['doc2']},
+    {distributed: ['doc3']},
+    {and: ['doc3']},
+    {design: ['doc3']},
+  ];
+
+  const doMapReduce = () => {
+    distribution.ridx.store.get(null, (e, v) => {
+      try {
+        expect(v.length).toEqual(dataset.length);
+      } catch (e) {
+        done(e);
+        return;
+      }
+
+      distribution.ridx.mr.exec({keys: v, map: mapper, reduce: reducer}, (e, v) => {
+        try {
+          expect(v).toEqual(expect.arrayContaining(expected));
+          expect(v).toHaveLength(expected.length);
+          done();
+        } catch (e) {
+          done(e);
+        }
+      });
+    });
+  };
+
+  let cntr = 0;
+  dataset.forEach((o) => {
+    const key = Object.keys(o)[0];
+    const value = o[key];
+    distribution.ridx.store.put(value, key, () => {
+      cntr++;
+      if (cntr === dataset.length) {
+        doMapReduce();
+      }
+    });
+  });
 });
 
-test('(10 pts) (scenario) all.mr:rlg', (done) => {
-    done(new Error('Implement the map and reduce functions'));
-});
+test.skip('(10 pts) (scenario) all.mr:rlg', () => {});
 
 /*
     This is the setup for the test scenario.
@@ -314,7 +393,12 @@ beforeAll((done) => {
               const tfidfConfig = {gid: 'tfidf'};
               distribution.local.groups.put(tfidfConfig, tfidfGroup, (e, v) => {
                 distribution.tfidf.groups.put(tfidfConfig, tfidfGroup, (e, v) => {
-                  done();
+                  const ridxConfig = {gid: 'ridx'};
+                  distribution.local.groups.put(ridxConfig, ridxGroup, (e, v) => {
+                    distribution.ridx.groups.put(ridxConfig, ridxGroup, (e, v) => {
+                      done();
+                    });
+                  });
                 });
               });
             });

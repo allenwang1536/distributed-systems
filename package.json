@@ -105,19 +105,19 @@
     },
     {
       "milestone": "M5",
-      "hours": 999,
-      "loc": 999,
+      "hours": 20,
+      "loc": 1200,
       "dev": {
-        "cpu-no": 999,
-        "mem-gb": 999,
-        "ssd-gb": 999
+        "cpu-no": 11,
+        "mem-gb": 18,
+        "ssd-gb": 460
       },
       "throughput": {
-        "dev": [],
+        "dev": [40.15],
         "aws": []
       },
       "latency": {
-        "dev": [],
+        "dev": [4981.68],
         "aws": []
       },
       "dloc": -99

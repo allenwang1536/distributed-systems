@@ -220,3 +220,16 @@ The main challenges were: 1. keeping objects from different distributed service 
 ## Key Feature
 reconf is designed to first identify which keys need to move before relocating objects because this minimizes unnecessary work and avoids touching objects whose placement does not change. By deciding relocation purely from the key under the old and new group configurations, the system only transfers the objects that must move, which reduces bandwidth and avoids redundant operations.
 
+# M5: Distributed Execution Engine
+
+## Summary
+
+My implementation comprises 8 new software components, totaling about 1200 added lines of code over the previous implementation. The main additions were the distributed MapReduce orchestrator, local and distributed append support for grouped intermediate values, the M5 scenario implementations, the M5 student tests, and a simple performance benchmark. Key challenges included coordinating the map, shuffle, and reduce phases across all nodes without leaking temporary state between runs; making shuffle writes safe when many values for the same reducer key arrive concurrently; and supporting both mapper styles used by the handout and tests (object and object[]). I addressed these by using ephemeral per-job services plus cleanup, making local persistent append perform a synchronous read-modify-write, and normalizing mapper and reducer outputs before storing or reducing them.
+
+## Correctness & Performance Characterization
+*Correctness*: I validated correctness with 12 M5 tests total: 3 provided MapReduce tests, 5 student tests, and 4 active scenario tests. These tests covered coordinator orchestration, mapper output normalization, distributed shuffle/reduce behavior, and various grouped reduction behavior scenarios.
+
+*Performance*: I characterized performance with a simple local benchmark. The benchmark runs a word-frequency workflow on a 3-node local cluster over 200 stored documents for 3 rounds and measures end-to-end job runtime. On my local machine, the workflow resulpted in an average of **40.15 documents/second**, with an average latency of **4981.68 ms per job**.
+
+## Key Feature
+I didn't implement any extra features.

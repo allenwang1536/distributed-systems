@@ -38,7 +38,7 @@ function bootstrap(config) {
   distribution.local.status.spawn = distributionLib.local.status.spawn;
   distribution.local.status.stop = distributionLib.local.status.stop;
   distribution.local.comm = distributionLib.local.comm;
-  distribution.node.start = distributionLib.node.start;
+  // distribution.node.start = distributionLib.node.start;
   distribution.util.serialize = distributionLib.util.serialize;
   distribution.util.deserialize = distributionLib.util.deserialize;
   /* __end_M3_solution__ */

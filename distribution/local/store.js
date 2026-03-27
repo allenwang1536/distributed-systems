@@ -177,7 +177,40 @@ function del(configuration, callback) {
  * @param {Callback} callback
  */
 function append(state, configuration, callback) {
-  return callback(new Error('store.append not implemented')); // You'll need to implement this method for the distributed processing milestone.
+  const {gid, key: rawKey} = normalizeConfig(configuration);
+  const key = rawKey ?? globalThis.distribution.util.id.getID(state);
+  const dir = getNodeStoreDir();
+  const filePath = getFilePath(gid, key);
+
+  try {
+    fs.mkdirSync(dir, {recursive: true});
+
+    let nextValue = [state];
+
+    try {
+      const data = fs.readFileSync(filePath, 'utf8');
+      const record = globalThis.distribution.util.deserialize(data);
+
+      if (Array.isArray(record.value)) {
+        nextValue = [...record.value, state];
+      } else if (record.value === undefined) {
+        nextValue = [state];
+      } else {
+        nextValue = [record.value, state];
+      }
+    } catch (e) {
+      if (!e || e.code !== 'ENOENT') {
+        return callback(e);
+      }
+    }
+
+    const record = {gid, key, value: nextValue};
+    const serialized = globalThis.distribution.util.serialize(record);
+    fs.writeFileSync(filePath, serialized, 'utf8');
+    return callback(null, nextValue);
+  } catch (e) {
+    return callback(e);
+  }
 }
 
 module.exports = {put, get, del, append};

@@ -71,7 +71,15 @@ function store(config) {
     const config = normalizeConfig(configuration);
 
     if (config.key === null) {
-      return callback(new Error('store.get key is null'));
+      const remote = {service: 'store', method: 'get'};
+      return globalThis.distribution[context.gid].comm.send([config], remote, (e, values) => {
+        if (e && Object.keys(e).length > 0) {
+          return callback(e, {});
+        }
+
+        const keys = Object.values(values || {}).flat().sort();
+        return callback({}, keys);
+      });
     }
 
     resolveNodeForKey(config.key, config.gid, (e, node) => {

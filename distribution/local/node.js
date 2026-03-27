@@ -203,7 +203,7 @@ function start(callback) {
         };
 
         try {
-          method(...args, done);
+          method.call(service, ...args, done);
         } catch (err) {
           done(err instanceof Error ? err : new Error(String(err)), null);
         }
