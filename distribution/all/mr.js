@@ -72,9 +72,9 @@ function mr(config) {
    */
 
     const mrID = id.getID(`${configuration}${Date.now()}`);
-    const serviceName = `mr-${mrID}`;
-    const mapNamespace = `${serviceName}-m`;
-    const shuffleNamespace = `${serviceName}-s`;
+    const serviceName = `mr.${mrID}`;
+    const mapNamespace = `${serviceName}.m`;
+    const shuffleNamespace = `${serviceName}.s`;
     const coordinatorNode = {
       ip: globalThis.distribution.node.config.ip,
       port: globalThis.distribution.node.config.port,
